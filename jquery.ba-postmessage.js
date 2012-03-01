@@ -66,12 +66,6 @@
     
     // I couldn't get window.postMessage to actually work in Opera 9.64!
     has_postMessage = window[postMessage] && !$.browser.opera;
-
-  if ( !has_postMessage ) {
-    jqpmSendHashMessage = function (message) {
-      target.location = target_url.replace( /#.*$/, '' ) + '#' + (+new Date) + (cache_bust++) + '&' + message;
-    };
-  }
   
   // Method: jQuery.postMessage
   // 
@@ -126,6 +120,10 @@
       var part_delay = 0,
           message_parts;
 
+      jqpmSendHashMessage = function (message) {
+        target.location = target_url.replace( /#.*$/, '' ) + '#' + (+new Date) + (cache_bust++) + '&' + message;
+      };
+      
       // We must limit the length of hashes for non-awesome browsers
       message = message.match(/.{1,1000}/g);
       for (var i = 0, part=''; part = message[i++];) {
