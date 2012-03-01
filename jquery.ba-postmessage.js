@@ -66,6 +66,12 @@
     
     // I couldn't get window.postMessage to actually work in Opera 9.64!
     has_postMessage = window[postMessage] && !$.browser.opera;
+
+  if ( !has_postMessage ) {
+    jqpmSendHashMessage = function (message) {
+      target.location = target_url.replace( /#.*$/, '' ) + '#' + (+new Date) + (cache_bust++) + '&' + message;
+    };
+  }
   
   // Method: jQuery.postMessage
   // 
@@ -117,16 +123,14 @@
       // of the target to target_url#message. A bit ugly, but it works! A cache
       // bust parameter is added to ensure that repeat messages trigger the
       // callback. If the hash is too long (> 1000 chars), we signal a chaining and send the next part after a delay
-      var sendMessage = function (message) {
-            target.location = target_url.replace( /#.*$/, '' ) + '#' + (+new Date) + (cache_bust++) + '&' + message;
-          },
-          part_delay = 0,
+      var part_delay = 0,
           message_parts;
+
       // We must limit the length of hashes for non-awesome browsers
       message = message.match(/.{1,1000}/g);
-      for (var i = 0; i < message.length; i++) {
-        setTimeout(function () { sendMessage(message[i-1] + '&;;pm_part=' + i + ',' + message.length) }, part_delay);
-        part_delay += 200;
+      for (var i = 0, part=''; part = message[i++];) {
+        setTimeout('jqpmSendHashMessage("' + part + '&;;pm_part=' + i + ',' + message.length + '")', part_delay);
+        part_delay += 500;
       }
     }
   };
