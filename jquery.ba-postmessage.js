@@ -77,7 +77,7 @@
               if ( hashTransportQueue.length > 0 ) {
                 target.location = target_url.replace( /#.*$/, '' ) + '#' + (+new Date) + (cache_bust++) + '&' + hashTransportQueue.shift();
               }
-            }, 500);
+            }, 1000);
           };
     }
   
@@ -252,6 +252,7 @@
             if ( hash_part[2] === hash_part[3] ) {
               callback({ data: hash_store });
               hash_store = '';
+              target_window.document.location.hash = '';
             }
           }
         }, 100 );
