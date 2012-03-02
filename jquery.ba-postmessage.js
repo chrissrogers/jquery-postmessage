@@ -64,8 +64,19 @@
     
     p_receiveMessage,
     
-    // I couldn't get window.postMessage to actually work in Opera 9.64!
-    has_postMessage = window[postMessage] && !$.browser.opera;
+    has_postMessage = window[postMessage];
+
+    if ( !has_postMessage ) {
+      var hashTransportQueue = [],
+          hashTransport = undefined,
+          hashTransportFactory = function (target, target_url) {
+            hashTransport = setInterval(function (target, target_url) {
+              if ( hashTransportQueue.length > 0 ) {
+                target.location = target_url.replace( /#.*$/, '' ) + '#' + (+new Date) + (cache_bust++) + '&' + hashTransportQueue.shift();
+              }
+            }, 500, target, target_url );
+          };
+    }
   
   // Method: jQuery.postMessage
   // 
@@ -117,18 +128,15 @@
       // of the target to target_url#message. A bit ugly, but it works! A cache
       // bust parameter is added to ensure that repeat messages trigger the
       // callback. If the hash is too long (> 1000 chars), we signal a chaining and send the next part after a delay
-      var part_delay = 0,
-          message_parts;
-
-      jqpmSendHashMessage = function (message) {
-        target.location = target_url.replace( /#.*$/, '' ) + '#' + (+new Date) + (cache_bust++) + '&' + message;
-      };
       
       // We must limit the length of hashes for non-awesome browsers
       message = message.match(/.{1,1000}/g);
       for (var i = 0, part=''; part = message[i++];) {
-        setTimeout('jqpmSendHashMessage("' + part + '&;;pm_part=' + i + ',' + message.length + '")', part_delay);
-        part_delay += 500;
+        hashTransportQueue.push(part + '&;;pm_part=' + i + ',' + message.length);
+      }
+
+      if (typeof hashTransport === 'undefined') {
+        hashTransportFactory(target, target_url);
       }
     }
   };
@@ -180,15 +188,13 @@
   // 
   //  Nothing!
   
-  $.receiveMessage = p_receiveMessage = function( callback, source_origin, delay, target_window ) {
+  $.receiveMessage = p_receiveMessage = function( callback, source_origin, target_window ) {
 
     target_window = source_origin && $.isWindow(source_origin)
       ? source_origin
-      : delay && $.isWindow(delay)
-        ? delay
-        : target_window && $.isWindow(target_window)
-          ? target_window
-          : window;
+      : target_window && $.isWindow(target_window)
+        ? target_window
+        : window;
 
     if ( has_postMessage ) {
       // Since the browser supports window.postMessage, the callback will be
@@ -242,7 +248,7 @@
               hash_store = '';
             }
           }
-        }, delay );
+        }, 100 );
       }
     }
   };
