@@ -64,17 +64,20 @@
     
     p_receiveMessage,
     
-    has_postMessage = window[postMessage];
+    has_postMessage = window[postMessage],
+
+    target, 
+    target_url;
 
     if ( !has_postMessage ) {
       var hashTransportQueue = [],
-          hashTransport = undefined,
-          hashTransportFactory = function (target, target_url) {
-            hashTransport = setInterval(function (target, target_url) {
+          hashTransport,
+          hashTransportFactory = function () {
+            hashTransport = setInterval(function () {
               if ( hashTransportQueue.length > 0 ) {
                 target.location = target_url.replace( /#.*$/, '' ) + '#' + (+new Date) + (cache_bust++) + '&' + hashTransportQueue.shift();
               }
-            }, 500, target, target_url );
+            }, 500);
           };
     }
   
@@ -107,7 +110,10 @@
   // 
   //  Nothing.
   
-  $[postMessage] = function( message, target_url, target ) {
+  $[postMessage] = function( message, param_target_url, param_target ) {
+    
+    target_url = param_target_url;
+
     if ( !target_url ) { return; }
     
     // Serialize the message if not a string. Note that this is the only real
@@ -116,7 +122,7 @@
     message = typeof message === 'string' ? message : $.param( message );
     
     // Default to parent if unspecified.
-    target = target || parent;
+    target = param_target || parent;
     
     if ( has_postMessage ) {
       // The browser supports window.postMessage, so call it with a targetOrigin
