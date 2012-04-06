@@ -202,8 +202,6 @@
         ? target_window
         : window;
 
-    console.log('attaching to ', $('title', target_window.document).text());
-
     if ( has_postMessage ) {
       // Since the browser supports window.postMessage, the callback will be
       // bound to the actual event associated with window.postMessage.
@@ -247,7 +245,6 @@
         var interval_id = setInterval(function () {
           var hash = target_window.document.location.hash,
               re = /^#?\d+&/;
-          // console.log(target_window.document, hash);
           if ( hash !== last_hash && re.test( hash ) ) {
             last_hash = hash;
             // Check if we are sending a long message across multiple hash changes
