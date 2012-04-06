@@ -202,6 +202,8 @@
         ? target_window
         : window;
 
+    console.log('attaching to ', $('title', target_window.document).text());
+
     if ( has_postMessage ) {
       // Since the browser supports window.postMessage, the callback will be
       // bound to the actual event associated with window.postMessage.
@@ -231,8 +233,9 @@
       // Since the browser sucks, a polling loop will be started, and the
       // callback will be called whenever the location.hash changes.
       
-      interval_id && clearInterval( interval_id );
-      interval_id = null;
+      for (var interval_id in interval_ids) {
+        interval_ids[interval_id] === target_window && clearInterval(interval_id) && (interval_ids[interval_id] = null);
+      }
       
       if ( callback ) {
         delay = typeof source_origin === 'number'
@@ -241,9 +244,10 @@
             ? delay
             : 100;
         
-        interval_id = setInterval(function () {
+        var interval_id = setInterval(function () {
           var hash = target_window.document.location.hash,
               re = /^#?\d+&/;
+          // console.log(target_window.document, hash);
           if ( hash !== last_hash && re.test( hash ) ) {
             last_hash = hash;
             // Check if we are sending a long message across multiple hash changes
@@ -256,6 +260,8 @@
             }
           }
         }, 100 );
+
+        interval_ids[interval_id] = target_window;
       }
     }
   };
