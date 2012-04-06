@@ -46,7 +46,7 @@
   '$:nomunge'; // Used by YUI compressor.
   
   // A few vars used in non-awesome browsers.
-  var interval_id,
+  var interval_ids = {},
     last_hash,
     hash_store,
     cache_bust = 1,
